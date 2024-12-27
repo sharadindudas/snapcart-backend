@@ -10,10 +10,10 @@ export const createproduct = TryCatchHandler(async (req, res, next) => {
 
     // Validation of data
     if ([name, description, price, category, stock].some((field) => field.trim() === "")) {
-        return next(new ErrorHandler("Please provide all the fields", 400));
+        throw new ErrorHandler("Please provide all the fields", 400);
     }
     if (!images || images.length === 0) {
-        return next(new ErrorHandler("Product images are required", 400));
+        throw new ErrorHandler("Product images are required", 400);
     }
 
     // Upload the product images to cloudinary
@@ -32,5 +32,39 @@ export const createproduct = TryCatchHandler(async (req, res, next) => {
         success: true,
         message: "Product created successfully",
         data: newProduct
+    });
+});
+
+// Get all products
+export const allproducts = TryCatchHandler(async (req, res, next) => {
+    // Get all products
+    const products = await ProductModel.find();
+
+    // Return the response
+    return res.status(200).json({
+        success: true,
+        message: "Fetched all products successfully",
+        data: products
+    });
+});
+
+// Delete product
+export const deleteproduct = TryCatchHandler(async (req, res, next) => {
+    // Get the product id from request params
+    const productid = req.params.id;
+
+    // Check if the product exists in the db or not
+    const productExists = await ProductModel.findById(productid);
+    if (!productExists) {
+        throw new ErrorHandler("Product does not exists", 404);
+    }
+
+    // Remove the product from db
+    await productExists.deleteOne();
+
+    // Return the response
+    return res.status(200).json({
+        success: true,
+        message: "Deleted product successfully"
     });
 });
