@@ -1,20 +1,16 @@
 import { Schema, model } from "mongoose";
 
+// Product schema
 const productSchema = new Schema(
     {
-        name: {
-            type: String,
-            required: [true, "Please Enter product Name"],
-            trim: true
-        },
-        desc: {
-            type: String,
-            required: [true, "Please Enter product Description"]
-        },
-        price: {
+        name: String,
+        description: String,
+        price: Number,
+        category: String,
+        images: [String],
+        stock: {
             type: Number,
-            required: [true, "Please Enter product Price"],
-            maxLength: [8, "Price cannot exceed 8 characters"]
+            default: 1
         },
         ratings: {
             type: Number,
@@ -23,47 +19,16 @@ const productSchema = new Schema(
         reviews: [
             {
                 name: {
-                    type: String,
-                    required: true
+                    type: Schema.Types.ObjectId,
+                    ref: "User"
                 },
-                rating: {
-                    type: Number,
-                    required: true
-                },
-                comment: {
-                    type: String,
-                    required: true
-                }
+                rating: Number,
+                comment: String
             }
-        ],
-        numOfReviews: {
-            type: Number,
-            default: 0
-        },
-        images: [
-            {
-                public_id: {
-                    type: String,
-                    required: true
-                },
-                url: {
-                    type: String,
-                    required: true
-                }
-            }
-        ],
-        category: {
-            type: String,
-            required: [true, "Please Enter Product Category"]
-        },
-        inStock: {
-            type: Number,
-            required: [true, "Please Enter product Stock"],
-            maxLength: [4, "Stock cannot exceed 4 characters"],
-            default: 1
-        }
+        ]
     },
     { timestamps: true }
 );
 
+// Product model
 export const ProductModel = model("Product", productSchema);

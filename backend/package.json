@@ -1,5 +1,5 @@
 {
-    "name": "ecommerce-backend",
+    "name": "backend",
     "version": "1.0.0",
     "main": "server.js",
     "type": "module",
@@ -8,23 +8,22 @@
         "dev": "cross-env NODE_ENV=development nodemon src/server.js"
     },
     "keywords": [],
-    "author": "",
+    "author": "Sharadindu Das",
     "license": "ISC",
     "description": "",
+    "devDependencies": {
+        "nodemon": "^3.1.9",
+        "prettier": "^3.4.2"
+    },
     "dependencies": {
-        "bcrypt": "^5.1.1",
+        "cloudinary": "^2.5.1",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "cross-env": "^7.0.3",
         "dotenv-flow": "^4.1.0",
         "express": "^4.21.2",
-        "express-fileupload": "^1.5.1",
         "helmet": "^8.0.0",
         "mongoose": "^8.9.2",
         "multer": "^1.4.5-lts.1"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.9",
-        "prettier": "^3.4.2"
     }
 }

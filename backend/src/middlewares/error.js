@@ -1,11 +1,11 @@
 import { ErrorHandler } from "../utils/handlers.js";
 
 export const errormiddleware = (err, req, res, next) => {
-    // Console all the errors
+    // Log all the errors
     console.error(err);
 
-    // Default error values
-    err.message ||= "Internal Server Error Occurred";
+    // Set default error values
+    err.message ||= "Internal Server Error Occured";
     err.statusCode ||= 500;
 
     // Wrong mongodb id
@@ -14,6 +14,7 @@ export const errormiddleware = (err, req, res, next) => {
         err = new ErrorHandler(message, 400);
     }
 
+    // Return the error response
     return res.status(err.statusCode).json({
         success: false,
         message: err.message

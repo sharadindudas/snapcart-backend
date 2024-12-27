@@ -1,67 +1,36 @@
+import { TryCatchHandler, ErrorHandler } from "../utils/handlers.js";
 import { ProductModel } from "../models/product.js";
-import { ErrorHandler, TryCatchHandler } from "../utils/handlers.js";
+import { uploadToCloudinary } from "../utils/cloudinary.js";
 
 // Create product
 export const createproduct = TryCatchHandler(async (req, res, next) => {
+    // Get data from request body and files
+    const { name, description, price, category, stock } = req.body;
+    const images = req.files;
+
+    // Validation of data
+    if ([name, description, price, category, stock].some((field) => field.trim() === "")) {
+        return next(new ErrorHandler("Please provide all the fields", 400));
+    }
+    if (!images || images.length === 0) {
+        return next(new ErrorHandler("Product images are required", 400));
+    }
+
+    // Upload the product images to cloudinary
+    const productImages = await Promise.all(
+        images.map(async (image) => {
+            const response = await uploadToCloudinary(image.path, "products");
+            return response.secure_url;
+        })
+    );
+
     // Create new product
-    const newProduct = await ProductModel.create(req.body);
+    const newProduct = await ProductModel.create({ ...req.body, images: productImages });
 
     // Return the response
     return res.status(201).json({
         success: true,
-        message: "Product added successfully",
+        message: "Product created successfully",
         data: newProduct
-    });
-});
-
-// Get all products
-export const allproducts = TryCatchHandler(async (req, res, next) => {
-    // Get all the products
-    const products = await ProductModel.find();
-
-    // Return the response
-    return res.status(200).json({
-        success: true,
-        message: "Fetched all products successfully",
-        data: products
-    });
-});
-
-// Update product
-export const updateproduct = TryCatchHandler(async (req, res, next) => {
-    // Check if the product exists in the db or not
-    const productId = req.params.id;
-    const productExists = await ProductModel.findById(productId);
-    if (!productExists) {
-        return next(new ErrorHandler("Product does not exists", 404));
-    }
-
-    // Update the product
-    const updatedProduct = await ProductModel.findByIdAndUpdate(productId, req.body, { new: true, runValidators: true });
-
-    // Return the response
-    return res.status(200).json({
-        success: true,
-        message: "Updated product successfully",
-        data: updatedProduct
-    });
-});
-
-// Delete product
-export const deleteproduct = TryCatchHandler(async (req, res, next) => {
-    // Check if the product exists in the db or not
-    const productId = req.params.id;
-    const productExists = await ProductModel.findById(productId);
-    if (!productExists) {
-        return next(new ErrorHandler("Product does not exists", 404));
-    }
-
-    // Delete the product
-    await ProductModel.findByIdAndDelete(productId);
-
-    // Return the response
-    return res.status(200).json({
-        success: true,
-        message: "Deleted product successfully"
     });
 });
