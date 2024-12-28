@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import morgan from "morgan";
 import cors from "cors";
 import helmet from "helmet";
 import router from "./routes/route.js";
@@ -21,6 +22,7 @@ app.use(
 );
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
+app.use(morgan("dev"));
 
 // Routes
 app.use("/api/v1", router);

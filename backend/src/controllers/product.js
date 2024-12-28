@@ -2,6 +2,19 @@ import { TryCatchHandler, ErrorHandler } from "../utils/handlers.js";
 import { ProductModel } from "../models/product.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
 
+// Get all products
+export const allproducts = TryCatchHandler(async (req, res, next) => {
+    // Get all products
+    const products = await ProductModel.find();
+
+    // Return the response
+    return res.status(200).json({
+        success: true,
+        message: "Fetched all products successfully",
+        data: products
+    });
+});
+
 // Create product
 export const createproduct = TryCatchHandler(async (req, res, next) => {
     // Get data from request body and files
@@ -35,19 +48,6 @@ export const createproduct = TryCatchHandler(async (req, res, next) => {
     });
 });
 
-// Get all products
-export const allproducts = TryCatchHandler(async (req, res, next) => {
-    // Get all products
-    const products = await ProductModel.find();
-
-    // Return the response
-    return res.status(200).json({
-        success: true,
-        message: "Fetched all products successfully",
-        data: products
-    });
-});
-
 // Delete product
 export const deleteproduct = TryCatchHandler(async (req, res, next) => {
     // Get the product id from request params
@@ -66,5 +66,24 @@ export const deleteproduct = TryCatchHandler(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Deleted product successfully"
+    });
+});
+
+// Get single product
+export const getproduct = TryCatchHandler(async (req, res, next) => {
+    // Get product id from request params
+    const productid = req.params.id;
+
+    // Check if the product exists in the db or not
+    const productExists = await ProductModel.findById(productid);
+    if (!productExists) {
+        throw new ErrorHandler("Product does not exists", 404);
+    }
+
+    // Return the response
+    return res.status(200).json({
+        success: true,
+        message: "Got product details successfully",
+        data: productExists
     });
 });
