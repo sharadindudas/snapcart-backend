@@ -1,21 +1,20 @@
 import express, { Express } from "express";
+import path from "path";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import cors from "cors";
+import { morganmiddleware } from "./middlewares/morgan";
+import { errormiddleware } from "./middlewares/error";
+import { notfoundmiddleware } from "./middlewares/notfound";
+import router from "./routes/routes";
 import { FRONTEND_URL } from "./config/config";
-import { notfoundmiddleware } from "./middlewares/notfound.middleware";
-import { errormiddleware } from "./middlewares/error.middleware";
-import { morganmiddleware } from "./middlewares/morgan.middleware";
-import router from "./routes/route";
 
 // Configurations
 const app: Express = express();
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "../", "public")));
 app.use(cookieParser());
 app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(
     cors({
         origin: FRONTEND_URL,
@@ -27,7 +26,7 @@ app.use(morganmiddleware);
 // Routes
 app.use("/api/v1", router);
 
-// Error and not found middlewares
+// Error and 404 not found middleware
 app.use(errormiddleware);
 app.use("*", notfoundmiddleware);
 

@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { emailValidator, phoneValidator } from "../utils/validators";
+import { emailvalidator, phonevalidator } from "../utils/validators";
 import { Types } from "mongoose";
 
 // Common schemas
@@ -7,13 +7,13 @@ export const emailSchema = yup
     .string()
     .required("Please provide an email address")
     .trim()
-    .test("validate-email", "Please provide a valid email address", (value) => emailValidator(value));
+    .test("validate-email", "Please provide a valid email address", (value) => emailvalidator(value));
 
 export const phoneSchema = yup
     .string()
     .required("Please provide a phone number")
     .trim()
-    .test("validate-phone", "Please provide a valid phone number", (value) => phoneValidator(value));
+    .test("validate-phone", "Please provide a valid phone number", (value) => phonevalidator(value));
 
 export const passwordSchema = yup
     .string()
@@ -33,9 +33,3 @@ export const useridSchema = yup
     .test("validate-userid", "Please provide a valid user id", (value) => Types.ObjectId.isValid(value));
 
 export const otpSchema = yup.string().required("Please provide an otp").trim().length(6, "Otp must be of 6 digits");
-
-// Token schema
-export const TokenSchema = yup.object({
-    token: yup.string().trim().required("Please Login to continue")
-});
-export type TokenSchemaType = yup.InferType<typeof TokenSchema>;

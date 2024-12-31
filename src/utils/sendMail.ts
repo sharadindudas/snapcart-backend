@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { FROM_EMAIL, RESEND_API_KEY } from "../config/config";
+import { ApiResponse } from "../@types/express";
 
 const resend = new Resend(RESEND_API_KEY);
 
@@ -9,7 +10,7 @@ interface SendMailProps {
     body: string;
 }
 
-export const sendMail = async ({ email, title, body }: SendMailProps) => {
+export const sendMail = async ({ email, title, body }: SendMailProps): Promise<ApiResponse> => {
     const { error } = await resend.emails.send({
         from: FROM_EMAIL,
         to: email,
@@ -24,8 +25,5 @@ export const sendMail = async ({ email, title, body }: SendMailProps) => {
         };
     }
 
-    return {
-        success: true,
-        message: "Email is sent successfully"
-    };
+    return { success: true, message: "Email is sent successfully" };
 };

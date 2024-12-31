@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { HandlerFunctionType } from "../types/types";
+import { HandlerFunction } from "../@types/express";
 
 // Try catch handler
-export const TryCatchHandler = (fn: HandlerFunctionType) => (req: Request, res: Response, next: NextFunction) => {
+export const TryCatchHandler = (fn: HandlerFunction) => (req: Request, res: Response, next: NextFunction) => {
     return Promise.resolve(fn(req, res, next)).catch((err) => next(err));
 };
 

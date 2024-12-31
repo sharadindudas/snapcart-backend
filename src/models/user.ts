@@ -1,4 +1,4 @@
-import { Schema, Document, model } from "mongoose";
+import { Document, model, Schema } from "mongoose";
 import bcrypt from "bcrypt";
 
 interface IUser extends Document {
@@ -6,11 +6,11 @@ interface IUser extends Document {
     email: string;
     phone: string;
     password: string;
-    role: "user" | "admin";
     isVerified: boolean;
+    role: "user" | "admin";
+    comparePassword: (password: string) => Promise<boolean>;
     createdAt: Date;
     updatedAt: Date;
-    comparePassword: (password: string) => Promise<boolean>;
 }
 
 const userSchema: Schema<IUser> = new Schema(
@@ -19,14 +19,14 @@ const userSchema: Schema<IUser> = new Schema(
         email: String,
         phone: String,
         password: String,
-        role: {
-            type: String,
-            enum: ["user", "admin"],
-            default: "user"
-        },
         isVerified: {
             type: Boolean,
             default: false
+        },
+        role: {
+            type: "String",
+            enum: ["user", "admin"],
+            default: "user"
         }
     },
     { timestamps: true }
@@ -35,18 +35,16 @@ const userSchema: Schema<IUser> = new Schema(
 // Hash the password
 userSchema.pre("save", async function (next) {
     // If the password is unchanged
-    if (!this.isModified("password")) {
-        return next();
-    }
+    if (!this.isModified("password")) next();
 
-    // If the password is modified
+    // If the password has changed
     this.password = await bcrypt.hash(this.password, 10);
-    return next();
+    next();
 });
 
 // Compare the password
 userSchema.methods.comparePassword = async function (password: string) {
-    return await bcrypt.compare(password, this.password as string);
+    return await bcrypt.compare(password, this.password);
 };
 
 export const UserModel = model<IUser>("User", userSchema);

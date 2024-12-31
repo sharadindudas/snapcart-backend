@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from "../utils/handlers";
 import { ValidationError } from "yup";
 
-export const errormiddleware = (err: ErrorHandler, _req: Request, res: Response, _next: NextFunction) => {
+export const errormiddleware = (err: ErrorHandler, req: Request, res: Response, next: NextFunction): void => {
     // Log all the errors
-    console.error(err.stack);
+    console.error(err);
 
-    // Set default error values
-    err.message = err.message || "Internal Server Error Occurred";
-    err.statusCode = err.statusCode || 500;
+    // Set default err values
+    err.message ||= "Internal Server Error Occured";
+    err.statusCode ||= 500;
 
     // Invalid jwt error
     if (err.name === "JsonWebTokenError") {
@@ -30,7 +30,7 @@ export const errormiddleware = (err: ErrorHandler, _req: Request, res: Response,
                 message.push(e);
             });
 
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message
             });
@@ -40,7 +40,7 @@ export const errormiddleware = (err: ErrorHandler, _req: Request, res: Response,
     }
 
     // Return the response
-    return res.status(err.statusCode).json({
+    res.status(err.statusCode).json({
         success: false,
         message: err.message
     });
