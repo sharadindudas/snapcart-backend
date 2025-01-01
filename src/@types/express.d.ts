@@ -1,5 +1,18 @@
 import { Request, Response, NextFunction, RequestHandler } from "express";
 
+declare global {
+    namespace Express {
+        interface Locals {
+            body?: any;
+            params?: any;
+            query?: any;
+            cookies?: any;
+            headers?: any;
+            decoded?: DecodedPayload;
+        }
+    }
+}
+
 export interface ApiResponse {
     success: boolean;
     message: string;
@@ -16,14 +29,10 @@ export type HandlerFunction<
 
 export type RequestLocations = "body" | "params" | "query" | "cookies" | "headers";
 
-declare global {
-    namespace Express {
-        interface Locals {
-            body?: any;
-            params?: any;
-            query?: any;
-            cookies?: any;
-            headers?: any;
-        }
-    }
-}
+export type DecodedPayload = {
+    id: string;
+    role: "user" | "admin";
+    iat: number;
+    exp: number;
+    iss: string;
+};

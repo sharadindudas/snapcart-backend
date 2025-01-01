@@ -6,7 +6,6 @@ export const validator = (location: RequestLocations, schema: ObjectSchema<AnyOb
     TryCatchHandler(async (req, res, next) => {
         // Get data from request location
         const data = req[location];
-        console.log(data);
 
         // Validation of data
         const validatedData = await schema.validate(data, { abortEarly: false, stripUnknown: true });
