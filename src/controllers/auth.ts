@@ -1,14 +1,14 @@
 import { RequestHandler, Response } from "express";
-import { UserModel } from "../models/user";
-import { LoginSchemaType, SendOtpSchemaType, SignupSchemaType, VerifyOtpSchemaType } from "../schemas/auth";
 import { ErrorHandler, TryCatchHandler } from "../utils/handlers";
-import { phoneparser } from "../utils/validators";
 import { ApiResponse } from "../@types/express";
+import { LoginSchemaType, SendOtpSchemaType, SignupSchemaType, VerifyOtpSchemaType } from "../schemas/auth";
+import { UserModel } from "../models/user";
+import { phoneparser } from "../utils/validators";
 import crypto from "crypto";
 import { sendMail } from "../utils/sendMail";
 import { verifyotptemplate } from "../templates/verifyotp";
 import { redisClient } from "../utils/redis";
-import jwt, { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import { ENV, JWT_SECRET } from "../config/config";
 
 // Signup
@@ -44,7 +44,7 @@ export const signup = TryCatchHandler(async (req, res: Response<ApiResponse>, ne
     });
 });
 
-// Send otp
+// Send Otp
 export const sendotp = TryCatchHandler(async (req, res: Response<ApiResponse>, next) => {
     // Get data from response locals
     const { userid } = res.locals.query as SendOtpSchemaType;
@@ -67,11 +67,11 @@ export const sendotp = TryCatchHandler(async (req, res: Response<ApiResponse>, n
     // Send the otp to the user via email
     const emailResponse = await sendMail({
         email: userExists.email,
-        title: "SnapCart | Verification Code",
+        title: `SnapCart | Verification Code`,
         body: verifyotptemplate(verifyOtp)
     });
 
-    // Check if the email is sent successfully to the user or not
+    // Check if the email is sent successfully or not
     if (!emailResponse.success) {
         throw new ErrorHandler(emailResponse.message, 400);
     }
@@ -87,7 +87,7 @@ export const sendotp = TryCatchHandler(async (req, res: Response<ApiResponse>, n
     });
 });
 
-// Verify otp
+// Verify Otp
 export const verifyotp = TryCatchHandler(async (req, res: Response<ApiResponse>, next) => {
     // Get data from response locals
     const { userid, otp } = res.locals.query as VerifyOtpSchemaType;
@@ -103,14 +103,16 @@ export const verifyotp = TryCatchHandler(async (req, res: Response<ApiResponse>,
         throw new ErrorHandler("User is already verified", 409);
     }
 
-    // Validation of verify otp and otp expiry
+    // Get the verify otp and otp expiry
     const verifyOtp = await redisClient.get(`verifyOtp:${userid}`);
     const verifyOtpExpiry = await redisClient.get(`verifyOtpExpiry:${userid}`);
+
+    // Validation of verify otp and otp expiry
     if (!verifyOtp || !verifyOtpExpiry || otp !== verifyOtp || new Date(Date.now()) > new Date(verifyOtpExpiry)) {
         throw new ErrorHandler("Invalid Otp or Otp has expired", 403);
     }
 
-    // Verify the user and remove the verify otp and otp expiry from redis
+    // Verify the user and remove verify otp and otp expiry from redis
     userExists.isVerified = true;
     await userExists.save({ validateBeforeSave: false });
     await redisClient.del(`verifyOtp:${userid}`);
@@ -138,7 +140,7 @@ export const login = TryCatchHandler(async (req, res: Response<ApiResponse>, nex
 
     // Check if the user is verified or not
     if (!userExists.isVerified) {
-        throw new ErrorHandler("Please verify your account", 403);
+        throw new ErrorHandler("Please verify the user", 403);
     }
 
     // Validation of password
@@ -157,7 +159,7 @@ export const login = TryCatchHandler(async (req, res: Response<ApiResponse>, nex
         {
             issuer: "SnapCart",
             expiresIn: "30d"
-        } as SignOptions
+        }
     );
 
     // Remove sensitive data
@@ -181,9 +183,9 @@ export const login = TryCatchHandler(async (req, res: Response<ApiResponse>, nex
 
 // Logout
 export const logout: RequestHandler = (req, res: Response<ApiResponse>, next) => {
-    // Clear the cookie and return the response
+    // Remove the cookie and return the response
     res.clearCookie("snapcartToken").status(200).json({
         success: true,
-        message: "Logged out successfully"
+        message: "User logged out successfully"
     });
 };

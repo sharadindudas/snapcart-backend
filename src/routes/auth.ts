@@ -9,6 +9,6 @@ authRouter.post("/signup", validator("body", SignupSchema), signup);
 authRouter.get("/send-otp", validator("query", SendOtpSchema), sendotp);
 authRouter.put("/verify-otp", validator("query", VerifyOtpSchema), verifyotp);
 authRouter.post("/login", validator("body", LoginSchema), login);
-authRouter.get("/logout", validator("cookies", TokenSchema) , logout)
+authRouter.get("/logout", validator("cookies", TokenSchema), logout);
 
 export default authRouter;

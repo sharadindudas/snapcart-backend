@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from "../utils/handlers";
 import { ValidationError } from "yup";
+import { MulterError } from "multer";
 
 export const errormiddleware = (err: ErrorHandler, req: Request, res: Response, next: NextFunction): void => {
     // Log all the errors
@@ -36,6 +37,15 @@ export const errormiddleware = (err: ErrorHandler, req: Request, res: Response, 
             });
         } else {
             err = new ErrorHandler(err.errors[0], 400);
+        }
+    }
+
+    // Multer errors
+    if (err instanceof MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+            err = new ErrorHandler("File size too large. Maximum size is 5MB", 400);
+        } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+            err = new ErrorHandler("Unexpected field name in form data", 400);
         }
     }
 

@@ -61,3 +61,9 @@ export const TokenSchema = yup.object({
     snapcartToken: yup.string().trim().required("Please Login to continue")
 });
 export type TokenSchemaType = yup.InferType<typeof TokenSchema>;
+
+// User Id Schema
+export const UserIdSchema = yup.object({
+    id: useridSchema
+});
+export type UserIdSchemaType = yup.InferType<typeof UserIdSchema>;

@@ -2,7 +2,7 @@ import { Response } from "express";
 import { ApiResponse, DecodedPayload } from "../@types/express";
 import { TryCatchHandler, ErrorHandler } from "../utils/handlers";
 import { UserModel } from "../models/user";
-import { UserIdSchemaType } from "../schemas/common";
+import { UserIdSchemaType } from "../schemas/auth";
 
 // Get user details
 export const getuserdetails = TryCatchHandler(async (req, res: Response<ApiResponse>, next) => {
@@ -52,7 +52,7 @@ export const getsingleuser = TryCatchHandler(async (req, res: Response<ApiRespon
     });
 });
 
-// Delete a user (admin)
+// Delete user (admin)
 export const deleteuser = TryCatchHandler(async (req, res: Response<ApiResponse>, next) => {
     // Get data from response locals
     const { id } = res.locals.params as UserIdSchemaType;

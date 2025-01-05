@@ -33,9 +33,3 @@ export const useridSchema = yup
     .test("validate-userid", "Please provide a valid user id", (value) => Types.ObjectId.isValid(value));
 
 export const otpSchema = yup.string().required("Please provide an otp").trim().length(6, "Otp must be of 6 digits");
-
-// User Id Schema
-export const UserIdSchema = yup.object({
-    id: useridSchema
-});
-export type UserIdSchemaType = yup.InferType<typeof UserIdSchema>;
