@@ -5,7 +5,7 @@ import { logger } from "./logger";
 export const connectMongoDB = async () => {
     try {
         await mongoose.connect(DATABASE_URL, {
-            dbName: "ecommerce"
+            dbName: "snapcart"
         });
         logger.info(`MongoDB is connected successfully`);
     } catch (err: any) {
