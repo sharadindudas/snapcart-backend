@@ -10,7 +10,7 @@
     "keywords": [],
     "author": "Sharadindu Das",
     "license": "ISC",
-    "description": "",
+    "description": "ecommerce application backend",
     "dependencies": {
         "bcrypt": "^5.1.1",
         "cloudinary": "^2.5.1",

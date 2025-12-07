@@ -3,13 +3,20 @@ import express from "express";
 import router from "./routes/index.routes";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { notFoundMiddleware } from "./middlewares/notfound.middleware";
+import { FRONTEND_URL } from "./config";
 
-// Express app initialization
+// Initialization of express application
 const app = express();
 
 // Global middlewares
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+app.use(
+    cors({
+        origin: FRONTEND_URL,
+        credentials: true,
+        methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+    })
+);
 
 // Routes
 app.use("/api/v1", router);
