@@ -3,7 +3,7 @@ import { AsyncHandler, ErrorHandler } from "../utils/handlers";
 import { GetAllProductsSchema } from "../validators/product.validator";
 
 // Create product (Admin)
-export const createProduct = AsyncHandler(async (req, res, next) => {
+export const createProduct = AsyncHandler(async (req, res, _next) => {
     try {
         const newProduct = await ProductModel.create(req.body);
         res.status(201).json({
@@ -17,36 +17,38 @@ export const createProduct = AsyncHandler(async (req, res, next) => {
 });
 
 // Get all products
-export const getAllProducts = AsyncHandler(async (req, res, next) => {
+export const getAllProducts = AsyncHandler(async (_req, res, _next) => {
     // Get data from response locals
     const { page, limit, order, search, category, minPrice, maxPrice } = res.locals as GetAllProductsSchema;
     const skip = (page - 1) * limit;
 
     // Build the filter logic
     const filter: any = {};
+
+    // Adding the filters if they are present
     if (search) {
         filter.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
     }
     if (category) {
         filter.category = { $regex: category, $options: "i" };
     }
-    if (minPrice > 0 || maxPrice < Infinity) {
+    if (minPrice !== undefined || maxPrice !== undefined) {
         filter.price = {};
-        if (minPrice > 0) filter.price.$gte = minPrice;
-        if (maxPrice < Infinity) filter.price.$lte = maxPrice;
+        if (minPrice !== undefined) filter.price.$gte = minPrice;
+        if (maxPrice !== undefined) filter.price.$lte = maxPrice;
     }
 
-    // Get all the products with limit skip and sorting
-    const products = await ProductModel.find(filter)
+    // Get all the products with filtering, sorting and pagination
+    const allProducts = await ProductModel.find(filter)
         .limit(limit + 1)
         .skip(skip)
         .sort({ createdAt: order === "desc" ? -1 : 1 })
         .lean();
 
-    // If products are more than the limit then remove the last product
-    const hasMore = products.length > limit;
+    // If number of products are more than the limit then remove the last product
+    const hasMore = allProducts.length > limit;
     if (hasMore) {
-        products.pop();
+        allProducts.pop();
     }
 
     // Calculate the next and previous page
@@ -58,15 +60,15 @@ export const getAllProducts = AsyncHandler(async (req, res, next) => {
         success: true,
         message: "Fetched all products successfully",
         data: {
-            products,
-            prevPage,
-            nextPage
+            allProducts,
+            nextPage,
+            prevPage
         }
     });
 });
 
 // Update product (Admin)
-export const updateProduct = AsyncHandler(async (req, res, next) => {
+export const updateProduct = AsyncHandler(async (req, res, _next) => {
     const productId = req.params.id;
     const updatedProductData = req.body;
 
@@ -87,7 +89,7 @@ export const updateProduct = AsyncHandler(async (req, res, next) => {
 });
 
 // Delete product (Admin)
-export const deleteProduct = AsyncHandler(async (req, res, next) => {
+export const deleteProduct = AsyncHandler(async (req, res, _next) => {
     const productId = req.params.id;
     const product = await ProductModel.findById(productId);
     if (!product) {
@@ -103,7 +105,7 @@ export const deleteProduct = AsyncHandler(async (req, res, next) => {
 });
 
 // Get product details
-export const getProductDetails = AsyncHandler(async (req, res, next) => {
+export const getProductDetails = AsyncHandler(async (req, res, _next) => {
     const productId = req.params.id;
     const product = await ProductModel.findById({ _id: productId });
     if (!product) {

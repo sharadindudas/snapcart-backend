@@ -12,7 +12,7 @@ export const validationMiddleware = (location: RequestLocation, schema: ObjectSc
         const validatedData = await schema.validate(data, { abortEarly: true, stripUnknown: true });
 
         // Set the validated data to response locals object
-        res.locals = validatedData;
+        res.locals = {...res.locals, ...validatedData};
 
         // Move to next handler function
         next();
