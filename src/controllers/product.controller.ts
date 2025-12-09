@@ -17,11 +17,56 @@ export const createProduct = AsyncHandler(async (req, res, next) => {
 
 // Get all products
 export const getAllProducts = AsyncHandler(async (req, res, next) => {
-    const products = await ProductModel.find();
+    // Get data from request query
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 15));
+    const order = req.query.order ? String(req.query.order)?.trim()?.toLowerCase() : "desc";
+    const search = req.query.search ? String(req.query.search)?.trim() : "";
+    const category = req.query.category ? String(req.query.category)?.trim() : "";
+    const minPrice = Number(req.query.minPrice) || 0;
+    const maxPrice = Number(req.query.maxPrice) || Infinity;
+    const skip = (page - 1) * limit;
+
+    // Build the filter logic
+    const filter: any = {};
+    if (search) {
+        filter.$or = [{ name: { $regex: search, $options: "i" } }, { description: { $regex: search, $options: "i" } }];
+    }
+    if (category) {
+        filter.category = { $regex: category, $options: "i" };
+    }
+    if (minPrice > 0 || maxPrice < Infinity) {
+        filter.price = {};
+        if (minPrice > 0) filter.price.$gte = minPrice;
+        if (maxPrice < Infinity) filter.price.$lte = maxPrice;
+    }
+
+    // Get all the products with limit skip and sorting
+    const products = await ProductModel.find(filter)
+        .limit(limit + 1)
+        .skip(skip)
+        .sort({ createdAt: order === "desc" ? -1 : 1 })
+        .lean();
+
+    // If products are more than the limit then remove the last product
+    const hasMore = products.length > limit;
+    if (hasMore) {
+        products.pop();
+    }
+
+    // Calculate the next and previous page
+    const nextPage = hasMore ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+
+    // Return the response
     res.status(200).json({
         success: true,
         message: "Fetched all products successfully",
-        data: products
+        data: {
+            products,
+            prevPage,
+            nextPage
+        }
     });
 });
 
