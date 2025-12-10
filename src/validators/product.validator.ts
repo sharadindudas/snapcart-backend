@@ -1,6 +1,54 @@
 import * as yup from "yup";
 import mongoose from "mongoose";
 
+// Upsert product schema
+export const UpsertProductSchema = yup.object({
+    _id: yup.string().trim().optional(),
+    name: yup
+        .string()
+        .trim()
+        .min(1, "Product name must be at least one character")
+        .max(100, "Product name must not exceed 100 characters")
+        .required("Please provide the product name"),
+    description: yup
+        .string()
+        .trim()
+        .min(10, "Description must be at least 10 characters")
+        .max(2000, "Description must not exceed 2000 characters")
+        .required("Please provide the description"),
+    price: yup
+        .number()
+        .typeError("Price must be a number")
+        .positive("Price must be greater than 0")
+        .max(99999999, "Price cannot exceed 99,999,999")
+        .required("Please provide the price"),
+    images: yup
+        .array()
+        .of(
+            yup.object({
+                public_id: yup.string().trim().required("Please provide the public_id for the image"),
+                url: yup.string().trim().url("Image URL must be a valid URL").required("Please provide the image URL")
+            })
+        )
+        .min(1, "At least one product image is required")
+        .max(10, "Cannot upload more than 10 images")
+        .required("Please provide product images"),
+    category: yup
+        .string()
+        .trim()
+        .min(1, "Category must be at least one character")
+        .max(50, "Category must not exceed 50 characters")
+        .required("Please provide the category"),
+    stock: yup
+        .number()
+        .typeError("Stock must be a number")
+        .integer("Stock must be an integer")
+        .min(0, "Stock cannot be negative")
+        .max(9999, "Stock cannot exceed 9999")
+        .required("Please provide the stock")
+});
+export type UpsertProductSchema = yup.InferType<typeof UpsertProductSchema>;
+
 // Get all products schema
 export const GetAllProductsSchema = yup
     .object({
@@ -19,7 +67,8 @@ export const GetAllProductsSchema = yup
 
 export type GetAllProductsSchema = yup.InferType<typeof GetAllProductsSchema>;
 
-const ProductIdSchema = yup.object({
+// Product id schema
+export const ProductIdSchema = yup.object({
     id: yup
         .string()
         .required("Please provide the product ID")
