@@ -1,7 +1,8 @@
 import { ErrorRequestHandler } from "express";
 import { ErrorHandler } from "../utils/handlers";
+import { ValidationError } from "yup";
 
-export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
+export const errorMiddleware: ErrorRequestHandler = (err, _req, res, _next) => {
     // Log all errors
     console.error(err);
 
@@ -12,6 +13,11 @@ export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
     // Handling mongodb cast error
     if (err.name === "CastError") {
         err = new ErrorHandler(`Resource not found. Invalid ${err.path}`, 400);
+    }
+
+    // Yup validation error
+    if (err instanceof ValidationError) {
+        err = new ErrorHandler(err.errors[0], 400);
     }
 
     // Return the response

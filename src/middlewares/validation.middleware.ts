@@ -9,7 +9,7 @@ export const validationMiddleware = (location: RequestLocation, schema: ObjectSc
         const data = req[location];
 
         // Validation of data
-        const validatedData = await schema.validate(data, { abortEarly: false, stripUnknown: true });
+        const validatedData = await schema.validate(data, { abortEarly: true, stripUnknown: true });
 
         // Set the validated data to response locals object
         res.locals = validatedData;
