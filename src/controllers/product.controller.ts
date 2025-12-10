@@ -1,5 +1,6 @@
 import { ProductModel } from "../models/product.model";
 import { AsyncHandler, ErrorHandler } from "../utils/handlers";
+import { GetAllProductsSchema } from "../validators/product.validator";
 
 // Create product (Admin)
 export const createProduct = AsyncHandler(async (req, res, next) => {
@@ -17,14 +18,8 @@ export const createProduct = AsyncHandler(async (req, res, next) => {
 
 // Get all products
 export const getAllProducts = AsyncHandler(async (req, res, next) => {
-    // Get data from request query
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 15));
-    const order = req.query.order ? String(req.query.order)?.trim()?.toLowerCase() : "desc";
-    const search = req.query.search ? String(req.query.search)?.trim() : "";
-    const category = req.query.category ? String(req.query.category)?.trim() : "";
-    const minPrice = Number(req.query.minPrice) || 0;
-    const maxPrice = Number(req.query.maxPrice) || Infinity;
+    // Get data from response locals
+    const { page, limit, order, search, category, minPrice, maxPrice } = res.locals as GetAllProductsSchema;
     const skip = (page - 1) * limit;
 
     // Build the filter logic
