@@ -17,8 +17,6 @@ export interface IProduct extends Document {
         comment: string;
     }[];
     user: Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
 }
 
 const productSchema: Schema<IProduct> = new Schema(
