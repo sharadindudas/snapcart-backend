@@ -1,4 +1,5 @@
 import { Document, model, Schema, Types } from "mongoose";
+import { ProductStatus } from "../types";
 
 export interface IProduct extends Document {
     name: string;
@@ -16,7 +17,9 @@ export interface IProduct extends Document {
         rating: number;
         comment: string;
     }[];
-    user: Types.ObjectId;
+    seller: Types.ObjectId;
+    status: ProductStatus;
+    approvedByAdmin: boolean;
 }
 
 const productSchema: Schema<IProduct> = new Schema(
@@ -55,10 +58,19 @@ const productSchema: Schema<IProduct> = new Schema(
                 }
             }
         ],
-        user: {
+        seller: {
             type: Schema.Types.ObjectId,
             ref: "User",
             index: true
+        },
+        status: {
+            type: String,
+            enum: Object.values(ProductStatus),
+            default: ProductStatus.DRAFT
+        },
+        approvedByAdmin: {
+            type: Boolean,
+            default: false
         }
     },
     { timestamps: true, versionKey: false }

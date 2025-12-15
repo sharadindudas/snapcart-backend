@@ -3,3 +3,9 @@ export enum UserRole {
     VENDOR = "vendor",
     ADMIN = "admin"
 }
+
+export enum ProductStatus {
+    DRAFT = "draft",
+    ACTIVE = "active",
+    BLOCKED = "blocked"
+}

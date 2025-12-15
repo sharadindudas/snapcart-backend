@@ -1,11 +1,18 @@
-import { Document, model, Schema, Types } from "mongoose";
 import bcrypt from "bcrypt";
+import { Document, model, Schema } from "mongoose";
 import { UserRole } from "../types";
 
 interface IUser extends Document {
     name: string;
-    email: string;
-    password: string;
+    authProviders: {
+        local?: {
+            email: string;
+            password: string;
+        };
+        google?: {
+            googleId: string;
+        };
+    };
     phone?: string;
     avatar?: {
         public_id: string;
@@ -16,7 +23,6 @@ interface IUser extends Document {
     isVerified: boolean;
     isActive: boolean;
 
-    wishlist: Types.ObjectId[];
     createdAt: Date;
     updatedAt: Date;
     lastLogin?: Date;
@@ -31,17 +37,21 @@ const userSchema: Schema<IUser> = new Schema(
             required: true,
             trim: true
         },
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-            index: true
-        },
-        password: {
-            type: String,
-            select: false
+        authProviders: {
+            local: {
+                email: {
+                    type: String,
+                    lowercase: true,
+                    trim: true
+                },
+                password: {
+                    type: String,
+                    select: false
+                }
+            },
+            google: {
+                googleId: String
+            }
         },
         phone: {
             type: String,
@@ -49,8 +59,7 @@ const userSchema: Schema<IUser> = new Schema(
         },
         avatar: {
             public_id: String,
-            url: String,
-            _id: false
+            url: String
         },
         role: {
             type: String,
@@ -66,27 +75,26 @@ const userSchema: Schema<IUser> = new Schema(
             type: Boolean,
             default: true
         },
-        wishlist: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "Product"
-            }
-        ],
         lastLogin: Date
     },
     { timestamps: true, versionKey: false }
 );
 
+userSchema.index({ "authProviders.local.email": 1 }, { unique: true, sparse: true });
+
 // Hash password
 userSchema.pre("save", async function () {
-    if (this.isModified("password")) {
-        this.password = await bcrypt.hash(this.password as string, 12);
+    if (this.isModified("authProviders.local.password")) {
+        const localAuth = this.authProviders?.local;
+        if (localAuth?.password) {
+            localAuth.password = await bcrypt.hash(localAuth.password, 10);
+        }
     }
 });
 
 // Compare password
 userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.password);
+    return await bcrypt.compare(password, this.authProviders?.local?.password);
 };
 
 export const UserModel = model("User", userSchema);
