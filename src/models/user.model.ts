@@ -4,10 +4,12 @@ import { UserRole } from "../types";
 
 interface IUser extends Document {
     name: string;
+    email: string;
+
     authProviders: {
         local?: {
-            email: string;
             password: string;
+            isVerified: boolean;
         };
         google?: {
             googleId: string;
@@ -32,6 +34,14 @@ interface IUser extends Document {
 
 const userSchema: Schema<IUser> = new Schema(
     {
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,
+            trim: true,
+            index: true
+        },
         name: {
             type: String,
             required: true,
@@ -39,18 +49,21 @@ const userSchema: Schema<IUser> = new Schema(
         },
         authProviders: {
             local: {
-                email: {
-                    type: String,
-                    lowercase: true,
-                    trim: true
-                },
                 password: {
                     type: String,
                     select: false
+                },
+                isVerified: {
+                    type: Boolean,
+                    default: false
                 }
             },
             google: {
-                googleId: String
+                googleId: {
+                    type: String,
+                    sparse: true,
+                    unique: true
+                }
             }
         },
         phone: {
@@ -80,8 +93,6 @@ const userSchema: Schema<IUser> = new Schema(
     { timestamps: true, versionKey: false }
 );
 
-userSchema.index({ "authProviders.local.email": 1 }, { unique: true, sparse: true });
-
 // Hash password
 userSchema.pre("save", async function () {
     if (this.isModified("authProviders.local.password")) {
@@ -94,7 +105,9 @@ userSchema.pre("save", async function () {
 
 // Compare password
 userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.authProviders?.local?.password);
+    const localPassword = this.authProviders?.local?.password;
+    if (!localPassword) return false;
+    return await bcrypt.compare(password, localPassword);
 };
 
 export const UserModel = model("User", userSchema);
