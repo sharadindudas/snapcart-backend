@@ -6,6 +6,7 @@ export interface IProduct extends Document {
     description: string;
     price: number;
     ratings: number;
+    numOfReviews: number;
     images: Array<{
         public_id: string;
         url: string;
@@ -17,7 +18,7 @@ export interface IProduct extends Document {
         rating: number;
         comment: string;
     }[];
-    seller: Types.ObjectId;
+    vendor: Types.ObjectId;
     status: ProductStatus;
     approvedByAdmin: boolean;
 }
@@ -30,7 +31,14 @@ const productSchema: Schema<IProduct> = new Schema(
         },
         description: String,
         price: Number,
-        ratings: Number,
+        ratings: {
+            type: Number,
+            default: 0
+        },
+        numOfReviews: {
+            type: Number,
+            default: 0
+        },
         images: [
             {
                 public_id: String,
@@ -58,9 +66,10 @@ const productSchema: Schema<IProduct> = new Schema(
                 }
             }
         ],
-        seller: {
+        vendor: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Vendor",
+            required: true,
             index: true
         },
         status: {

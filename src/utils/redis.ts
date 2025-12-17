@@ -1,39 +1,44 @@
 import Redis from "ioredis";
 import { REDIS_HOST, REDIS_PORT, REDIS_PASSWORD } from "../config";
 
-export const redis = new Redis({
-    host: REDIS_HOST || "localhost",
-    port: REDIS_PORT || 6379,
-    password: REDIS_PASSWORD || undefined,
-    maxRetriesPerRequest: null,
-    enableReadyCheck: false,
-    retryStrategy: (times) => {
-        const delay = Math.min(times * 1000, 3000);
-        return delay;
-    },
-    lazyConnect: false
-});
+let redis: Redis | null = null;
 
-redis.on("connect", () => {
-    console.log("✅ Redis is connected successfully");
-});
+export const connectRedis = async (): Promise<Redis> => {
+    try {
+        if (!redis) {
+            redis = new Redis({
+                host: REDIS_HOST || "localhost",
+                port: Number(REDIS_PORT) || 6379,
+                password: REDIS_PASSWORD || undefined,
+                maxRetriesPerRequest: null,
+                enableReadyCheck: false,
+                retryStrategy: (times) => Math.min(times * 1000, 3000)
+            });
 
-redis.on("error", (err) => {
-    console.error("❌ Redis connection error:", err.message);
-});
+            redis.on("connect", () => {
+                console.log("✅ Redis is connected successfully");
+            });
 
-redis.on("reconnecting", () => {
-    console.log("🔄 Redis reconnecting...");
-});
+            redis.on("error", (err) => {
+                console.error("❌ Redis connection error:", err.message);
+            });
+        }
 
-process.on("SIGINT", async () => {
-    await redis.quit();
-    console.log("Redis connection closed");
-    process.exit(0);
-});
+        // Ensure Redis is actually reachable
+        await redis.ping();
 
-process.on("SIGTERM", async () => {
-    await redis.quit();
-    console.log("Redis connection closed");
-    process.exit(0);
-});
+        return redis;
+    } catch (err) {
+        if (err instanceof Error) {
+            console.error("❌ Redis connection failed:", err.message);
+        }
+        process.exit(1);
+    }
+};
+
+export const redisInstance = (): Redis => {
+    if (!redis) {
+        throw new Error("Redis not initialized. Call connectRedis() first.");
+    }
+    return redis;
+};
